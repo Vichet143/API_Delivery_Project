@@ -1,0 +1,26 @@
+{
+  "name": "backend_delivery_project_supabase",
+  "version": "1.0.0",
+  "description": "Backend for Delivery Project using Supabase",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:dev": "nodemon index.js"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.81.1",
+    "bakong-khqr": "^1.0.20",
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "init": "^0.1.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "postgres": "^3.4.7",
+    "qrcode": "^1.5.4"
+  }
+}
