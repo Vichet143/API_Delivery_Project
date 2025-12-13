@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const DeliveryModel = require("../modals/createdelivery");
+const supabase = require("../db/supabase");
 
 const createDelivery = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ const createDelivery = async (req, res) => {
       !receiver_contact ||
       !destination_address ||
       !type_of_items ||
-      !itemsize||
+      !itemsize ||
       !weight ||
       !type_of_delivery ||
       !payment_type ||
@@ -72,13 +73,98 @@ const createDelivery = async (req, res) => {
 const getallcreatedeliveries = async (req, res) => {
   try {
     const { data, error } = await DeliveryModel.findAll();
-    if (error) return res.status(400).json({ message: error.message }); 
+    if (error) return res.status(400).json({ message: error.message });
     res.json({ success: true, deliveries: data });
   } catch (err) {
     console.error("Error in getallcreatedeliveries:", err);
     res.status(500).json({ message: err.message || "Internal Server Error", error: err });
   }
 };
+
+const acceptDelivery = async (req, res) => {
+  try {
+    const { delivery_id } = req.body; // ✅ get from body
+    if (!delivery_id)
+      return res.status(400).json({ message: "delivery_id is required" });
+
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const transporter_id = decoded.id;
+    const transporter_name = `${decoded.firstname} ${decoded.lastname}`.trim();
+
+    const { data, error } = await DeliveryModel.assignToTransporter(
+      delivery_id,
+      transporter_id,
+      transporter_name
+    );
+
+    if (error) return res.status(400).json({ message: error.message });
+    if (!data?.inserted)
+      return res.status(404).json({ message: "Already accepted or not found" });
+
+    res.json({ message: "Delivery accepted", delivery: data.inserted });
+
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const updateDeliveryStatus = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const transporter_id = decoded.id;
+
+    const { delivery_id, status } = req.body;
+
+    if (!delivery_id || !status) {
+      return res.status(400).json({ message: "delivery_id and status are required" });
+    }
+
+    const updatePayload = {
+      status,
+      updated_at: new Date(),
+      delivered_at: status === "delivered" ? new Date() : null
+    };
+
+    const { data, error } = await supabase
+      .from("createdeliveries")
+      .update(updatePayload)
+      .eq("delivery_id", delivery_id)
+      .eq("transporter_id", transporter_id)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(400).json({ message: "Update failed", error });
+    }
+
+    if (!data) {
+      return res.status(403).json({
+        message: "You cannot update this delivery. It was not accepted by you."
+      });
+    }
+
+    return res.json({
+      message: "Status updated successfully",
+      delivery: data
+    });
+
+  } catch (err) {
+    console.error("updateDeliveryStatus error:", err);
+    return res.status(500).json({ message: "Internal error", error: err.message });
+  }
+};
+
 
 const getDeliveriesByToken = async (req, res) => {
   try {
@@ -105,4 +191,4 @@ const getDeliveriesByToken = async (req, res) => {
 };
 
 
-module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken };
+module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus };

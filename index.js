@@ -9,6 +9,8 @@ const createDeliveryRoutes = require("./routes/createDeliveryroute")
 const ratingRoutes = require("./routes/ratingRouter");
 const paymentRoutes = require("./routes/paymentRoutes");
 const chatuserRoutes = require("./routes/chatuserRoutes");
+const transporterRoutes = require("./routes/transporterRoutes");
+const transporterDeliveryRoutes = require("./routes/transporterDeliveryRoutes")
 
 const app = express()
 app.use(bodyParser.json());
@@ -25,18 +27,21 @@ app.use(cors({
 
 
 app.use("/auth", authRoutes)
+app.use("/transporter", transporterRoutes);
 app.use("/user", userRoutes)
 app.use("", ratingRoutes)
 app.use("", createDeliveryRoutes)
 app.use("", paymentRoutes)
 app.use("", chatuserRoutes)
+app.use("/transporter", transporterDeliveryRoutes)
+
 
 // import("./routes/ratingRouter.js").then((ratingRoutes) => {
 //   app.use("", ratingRoutes.default);
 // });
 
 
-const port = process.env.PORT || 1337;
+const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
   console.log("Server running on port " + port);

@@ -48,6 +48,11 @@ exports.register = async (req, res) => {
       return res.status(500).json({ message: "Failed to register user", error });
     }
 
+    // Insert into all_users
+    await supabase.from("all_users").insert([{
+      firstname, lastname, email, role, source_table: "users"
+    }]);
+
     res.json({ message: "User registered successfully", user: data[0] });
   } catch (err) {
     console.error("Unexpected error in register:", err);
@@ -61,57 +66,61 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("Login attempt for email:", email);
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const { data: user, error } = await supabase
-      .from("users")
+    // Fetch user metadata from all_users
+    const { data: allUser, error: metaError } = await supabase
+      .from("all_users")
       .select("*")
       .eq("email", email)
       .maybeSingle();
 
-    if (error) {
-      console.error("Database error during login:", error);
-      return res.status(500).json({ message: "Database error", error });
+    if (metaError) {
+      console.error("Database error fetching all_users:", metaError);
+      return res.status(500).json({ message: "Database error", error: metaError });
     }
 
-    if (!user) {
-      return res.status(400).json({ message: "Email not found" });
+    if (!allUser) return res.status(401).json({ message: "Email not found" });
+
+    const sourceTable = allUser.source_table;
+
+    // Fetch full user with password from the original table
+    const { data: user, error: userError } = await supabase
+      .from(sourceTable)
+      .select("*")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (userError || !user) {
+      console.error("Error fetching user from source table:", userError);
+      return res.status(500).json({ message: "Database error fetching user" });
     }
 
+    // Compare password
     const passwordMatch = await comparePassword(password, user.password);
-    if (!passwordMatch) {
-      return res.status(400).json({ message: "Wrong password" });
-    }
+    if (!passwordMatch) return res.status(401).json({ message: "Wrong password" });
 
+    // Sign JWT
     if (!process.env.JWT_SECRET) {
       console.error("JWT_SECRET not defined");
       return res.status(500).json({ message: "Server configuration error" });
     }
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-        firstname: user.firstname,
-        lastname: user.lastname
-      },
+      { id: user.id, role: user.role, firstname: user.firstname, lastname: user.lastname },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-
-    delete user.password; // remove password before sending response
-
-    res.json({
-      message: "Login success",
-      user,
-      token
-    });
+    const { id, firstname, lastname, role } = user;
+    res.json({ message: "Login success", user: { id, firstname, lastname, role }, token });
   } catch (err) {
     console.error("Unexpected error in login:", err);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
+
