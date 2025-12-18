@@ -190,5 +190,22 @@ const getDeliveriesByToken = async (req, res) => {
   }
 };
 
+const getAllDelivery = async (req, res) => {
+  try {
+    const deliveries = await DeliveryModel.findAll();
 
-module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus };
+    return res.json({
+      success: true,
+      deliveries
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+
+module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery };
