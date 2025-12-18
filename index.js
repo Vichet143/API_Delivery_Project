@@ -11,6 +11,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const chatuserRoutes = require("./routes/chatuserRoutes");
 const transporterRoutes = require("./routes/transporterRoutes");
 const transporterDeliveryRoutes = require("./routes/transporterDeliveryRoutes")
+const chatRoutes = require("./routes/chatRoutes")
 
 const app = express()
 app.use(bodyParser.json());
@@ -34,7 +35,7 @@ app.use("", createDeliveryRoutes)
 app.use("", paymentRoutes)
 app.use("", chatuserRoutes)
 app.use("/transporter", transporterDeliveryRoutes)
-
+app.use("", chatRoutes)
 
 // import("./routes/ratingRouter.js").then((ratingRoutes) => {
 //   app.use("", ratingRoutes.default);

@@ -1,4 +1,5 @@
 const supabase = require("../db/supabase");
+const { getalluser } = require("../modals/userModal");
 const { hashPassword, comparePassword } = require("../utils/hash");
 const jwt = require("jsonwebtoken");
 require("dotenv").config(); // make sure .env is loaded
@@ -49,9 +50,16 @@ exports.register = async (req, res) => {
     }
 
     // Insert into all_users
+    // Insert into all_users
     await supabase.from("all_users").insert([{
-      firstname, lastname, email, role, source_table: "users"
+      user_id: data[0].id,   // <-- captured from Supabase insert
+      firstname,
+      lastname,
+      email,
+      role,
+      source_table: "users"
     }]);
+
 
     res.json({ message: "User registered successfully", user: data[0] });
   } catch (err) {
@@ -111,16 +119,43 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, firstname: user.firstname, lastname: user.lastname },
+      {
+        id: user.id,
+        role: allUser.role,   // ✅ FIX HERE
+        firstname: user.firstname,
+        lastname: user.lastname,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+
     const { id, firstname, lastname, role } = user;
-    res.json({ message: "Login success", user: { id, firstname, lastname, role }, token });
+    res.json({
+      message: "Login success",
+      user: {
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        role: allUser.role,   // ✅ FIX HERE
+      },
+      token,
+    });
+
   } catch (err) {
     console.error("Unexpected error in login:", err);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await getalluser();
+    return res.status(200).json({ success: true, users });
+  } catch (err) {
+    console.error("Error in getAllUsers controller:", err);
+    return res.status(500).json({ success: false, message: "Server Error", error: err.message });
+  }
+};
+
 

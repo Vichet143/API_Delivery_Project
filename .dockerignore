@@ -1,13 +1,13 @@
-# Node / build
-node_modules
-dist
-data
-uploads
-# Git / IDE
-.git
-.vscode
-.idea
+# # Node / build
+# node_modules
+# dist
+# data
+# uploads
+# # Git / IDE
+# .git
+# .vscode
+# .idea
 
-# env
-.env
-.env.* 
+# # env
+# .env
+# .env.* 
