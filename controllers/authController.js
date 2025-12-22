@@ -122,6 +122,7 @@ exports.login = async (req, res) => {
       {
         id: user.id,
         role: allUser.role,   // ✅ FIX HERE
+        email: user.email,
         firstname: user.firstname,
         lastname: user.lastname,
       },
@@ -136,6 +137,7 @@ exports.login = async (req, res) => {
       user: {
         id: user.id,
         firstname: user.firstname,
+        email: user.email,
         lastname: user.lastname,
         role: allUser.role,   // ✅ FIX HERE
       },
