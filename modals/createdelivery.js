@@ -1,4 +1,5 @@
 const supabase = require("../db/supabase");
+const { findById } = require("./userModal");
 
 const DeliveryModel = {
   create: async (delivery) => {
@@ -11,6 +12,14 @@ const DeliveryModel = {
 
   findAll: async () => {
     const { data, error } = await supabase.from("createdeliveries").select("*");
+    return { data, error };
+  },
+  findById: async (delivery_id) => {
+    const { data, error } = await supabase
+      .from("createdeliveries")
+      .select("*")
+      .eq("delivery_id", delivery_id)
+      .single();
     return { data, error };
   },
 
