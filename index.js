@@ -12,6 +12,8 @@ const chatuserRoutes = require("./routes/chatuserRoutes");
 const transporterRoutes = require("./routes/transporterRoutes");
 const transporterDeliveryRoutes = require("./routes/transporterDeliveryRoutes")
 const chatRoutes = require("./routes/chatRoutes")
+const { Server } = require('socket.io');
+const http = require('http');
 
 const app = express()
 app.use(bodyParser.json());
@@ -25,6 +27,22 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  // Optional: CORS configuration if your client is served from a different origin
+  cors: {
+    origin: "http://localhost:5173", // Replace with your client's origin
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+});
 
 
 app.use("/auth", authRoutes)
