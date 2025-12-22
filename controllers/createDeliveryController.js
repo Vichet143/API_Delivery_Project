@@ -55,8 +55,7 @@ const createDelivery = async (req, res) => {
       weight,
       type_of_delivery,
       payment_type,
-      total_amount,
-      status: "pending"
+      total_amount
     });
 
     if (error) return res.status(400).json({ message: error.message });
@@ -206,6 +205,25 @@ const getAllDelivery = async (req, res) => {
   }
 };
 
+const getDeliveriesById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await DeliveryModel.findById(id);
+
+    if (error) return res.status(400).json({ message: error.message });
+
+    return res.json({
+      success: true,
+      delivery: data
+    });
+
+  } catch (err) {
+    console.error("Error in getDeliveriesById:", err);
+    return res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
 
 
-module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery };
+
+module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery , getDeliveriesById};
