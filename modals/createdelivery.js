@@ -31,6 +31,14 @@ const DeliveryModel = {
       .order("created_at", { ascending: false });
     return { data, error };
   },
+  findByTransporter: async (transporter_id) => {
+    const { data, error } = await supabase
+      .from("createdeliveries")
+      .select("*")
+      .eq("transporter_id", transporter_id)
+      .order("created_at", { ascending: false });
+    return { data, error };
+  },
 
   assignToTransporter: async (delivery_id, transporter_id, transporter_name) => {
     try {

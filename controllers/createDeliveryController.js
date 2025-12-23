@@ -188,6 +188,29 @@ const getDeliveriesByToken = async (req, res) => {
     return res.status(500).json({ message: err.message || "Internal Server Error" });
   }
 };
+const getDeliveriesByTransporter = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const transporter_id = decoded.id;
+
+    // Call model properly
+    const { data, error } = await DeliveryModel.findByTransporter(transporter_id);
+
+    if (error) return res.status(400).json({ message: error.message });
+
+    return res.json({
+      success: true,
+      deliveries: data
+    });
+
+  } catch (err) {
+    console.error("Error in getDeliveriesByTransporter:", err);
+    return res.status(500).json({ message: err.message || "Internal Server Error" });
+  }
+};
 
 const getAllDelivery = async (req, res) => {
   try {
@@ -226,4 +249,4 @@ const getDeliveriesById = async (req, res) => {
 
 
 
-module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery , getDeliveriesById};
+module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery, getDeliveriesById, getDeliveriesByTransporter };
