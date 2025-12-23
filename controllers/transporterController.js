@@ -1,5 +1,6 @@
 const supabase = require("../db/supabase");
 const { hashPassword, comparePassword } = require("../utils/hash");
+const transporterModel = require("../modals/transporterModel");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -101,15 +102,22 @@ exports.loginTransporter = async (req, res) => {
     if (!passwordMatch) return res.status(400).json({ message: "Wrong password" });
 
     // Prepare payload for JWT
-    const payload = {
-      id: transporter.id,
-      role: "transporter",
-      firstname: transporter.firstname,
-      lastname: transporter.lastname,
-      email: transporter.email
-    };
+    
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      {
+        id: transporter.id,
+        firstname: transporter.firstname,
+        lastname: transporter.lastname,
+        email: transporter.email,
+        role: transporter.role,
+        vehicle_type: transporter.vehicle_type,
+        license_plate: transporter.license_plate
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
 
     // Remove password before sending response
     delete transporter.password;
@@ -130,6 +138,25 @@ exports.loginTransporter = async (req, res) => {
 
   } catch (err) {
     console.error("loginTransporter error:", err);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  }
+};
+
+exports.getTransporterProfile = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const { data, error } = await transporterModel.findById(id);
+
+    if (error) return res.status(500).json({ message: "Database error", error });
+    if (!data) return res.status(404).json({ message: "Transporter not found" });
+
+    res.json({
+      message: "Transporter profile fetched successfully",
+      transporter: data
+    });
+
+  } catch (err) {
+    console.error("getTransporterProfile error:", err);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };

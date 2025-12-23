@@ -1,18 +1,32 @@
 const supabase = require("../db/supabase")
 
-exports.createUser = async (transporter) => {
-  return await supabase.from("transporters").insert(transporter)
-}
+const transporterModel = {
+  async create({ firstname, lastname, email, password, vehicle_type, license_plate }) {
+    const { data, error } = await supabase
+      .from("transporters")
+      .insert({ firstname, lastname, email, password, vehicle_type, license_plate })
+      .select()
+      .single();
+    return { data, error };
+  },
+  async findByEmail(email) {      
+    const { data, error } = await supabase
+      .from("transporters")
+      .select("*")
+      .eq("email", email)
+      .single();
+    return { data, error };
+  },  
 
-exports.findByEmail = async (email) => {
-  return await supabase.from("transporters").select("*").eq("email", email).single()
-}
-
-exports.findById = async (id) => {
-  return await supabase
-    .from("transporters")
-    .select("transporter_id, firstname, lastname, email")
-    .eq("transporter_id", id)
-    .single();
+  async findById(id) {      
+    const { data, error } = await supabase
+      .from("transporters")
+      .select("id, firstname, lastname, email, role, vehicle_type, license_plate")
+      .eq("id", id)
+      .single();
+    return { data, error };
+  }
 };
+
+module.exports = transporterModel;
 

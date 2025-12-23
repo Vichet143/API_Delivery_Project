@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createDelivery, getallcreatedeliveries, getDeliveriesByToken, getAllDelivery,getDeliveriesById } = require('../controllers/createDeliveryController');
+const { createDelivery, getallcreatedeliveries, getDeliveriesByToken, getAllDelivery, getDeliveriesById, getDeliveriesByTransporter } = require('../controllers/createDeliveryController');
 const updateDeliveryStatus = require('../controllers/updateDelivery');
 const authenticate = require('../middleware/createdeliveryMiddleware');
 
@@ -9,5 +9,6 @@ router.get('/mydeliveries', authenticate, getDeliveriesByToken);
 router.patch("/status", authenticate, updateDeliveryStatus);
 router.get("/getalldelivery", getAllDelivery)
 router.get("/getdeliverybyid/:id", getDeliveriesById)
+router.get("/getdeliveriesbytransporter", authenticate, getDeliveriesByTransporter);
 
 module.exports = router;
