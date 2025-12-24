@@ -4,6 +4,10 @@ const supabase = require("../db/supabase");
 
 const createDelivery = async (req, res) => {
   try {
+
+    // 1. Log the body to verify data is arriving from Vue
+    console.log("BACKEND RECEIVED BODY:", req.body);
+
     // Get token from header
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
@@ -16,9 +20,13 @@ const createDelivery = async (req, res) => {
     // Validate body
     const {
       pick_up_address,
+      pickup_lat,      // <--- ADDED
+      pickup_lng,      // <--- ADDED
       receiver_name,
       receiver_contact,
       destination_address,
+      destination_lat, // <--- ADDED
+      destination_lng, // <--- ADDED
       type_of_items,
       itemsize,
       weight,
@@ -29,9 +37,11 @@ const createDelivery = async (req, res) => {
 
     if (
       !pick_up_address ||
+      !pickup_lat || !pickup_lng || // <--- ADDED
       !receiver_name ||
       !receiver_contact ||
       !destination_address ||
+      !destination_lat || !destination_lng || // <--- ADDED
       !type_of_items ||
       !itemsize ||
       !weight ||
@@ -47,9 +57,13 @@ const createDelivery = async (req, res) => {
       user_id,
       username,
       pick_up_address,
+      pickup_lat,      // <--- ADDED
+      pickup_lng,      // <--- ADDED
       receiver_name,
       receiver_contact,
       destination_address,
+      destination_lat, // <--- ADDED
+      destination_lng, // <--- ADDED
       type_of_items,
       itemsize,
       weight,

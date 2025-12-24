@@ -67,6 +67,13 @@ const DeliveryModel = {
           user_id: deliveryData.user_id,
           username: deliveryData.username,
           pick_up_address: deliveryData.pick_up_address,
+
+          // --- ADD THESE 4 LINES HERE ---
+          pickup_lat: deliveryData.pickup_lat,
+          pickup_lng: deliveryData.pickup_lng,
+          destination_lat: deliveryData.destination_lat,
+          destination_lng: deliveryData.destination_lng,
+
           receiver_name: deliveryData.receiver_name,
           receiver_contact: deliveryData.receiver_contact,
           destination_address: deliveryData.destination_address,
