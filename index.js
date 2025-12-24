@@ -14,6 +14,7 @@ const transporterDeliveryRoutes = require("./routes/transporterDeliveryRoutes")
 const chatRoutes = require("./routes/chatRoutes")
 const { Server } = require('socket.io');
 const http = require('http');
+const router = express.Router();
 
 const app = express()
 app.use(bodyParser.json());
@@ -58,6 +59,10 @@ app.use("", chatRoutes)
 // import("./routes/ratingRouter.js").then((ratingRoutes) => {
 //   app.use("", ratingRoutes.default);
 // });
+router.put("/test/:id", (req, res) => {
+  res.json({ message: "PATCH works", id: req.params.id });
+});
+
 
 
 const port = process.env.PORT || 3000;

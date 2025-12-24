@@ -1,4 +1,5 @@
-const supabase = require("../db/supabase")
+const supabase = require("../db/supabase");
+const { get } = require("../routes/transporterRoutes");
 
 const transporterModel = {
   async create({ firstname, lastname, email, password, vehicle_type, license_plate }) {
@@ -25,7 +26,12 @@ const transporterModel = {
       .eq("id", id)
       .single();
     return { data, error };
-  }
+  },
+  async getAllTransporters() {
+    const { data, error } = await supabase.from("transporters").select("*");
+    if (error) throw error;
+    return data;
+  },
 };
 
 module.exports = transporterModel;
