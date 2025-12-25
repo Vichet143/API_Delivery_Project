@@ -62,7 +62,7 @@ exports.register = async (req, res) => {
     }]);
 
 
-    res.json({ message: "User registered successfully", user: data[0] });
+    res.json({ success: true, message: "User registered successfully", user: data[0] });
   } catch (err) {
     console.error("Unexpected error in register:", err);
     res.status(500).json({ message: "Internal Server Error", error: err.message });
@@ -162,6 +162,7 @@ exports.login = async (req, res) => {
 
     const { id, firstname, lastname, role } = user;
     res.json({
+      success: true,
       message: "Login success",
       user: {
         id: user.id,
@@ -340,7 +341,7 @@ exports.updateUserStatus = async (req, res) => {
 
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { firstname, lastname, email} = req.body;
+    const { firstname, lastname, email, status } = req.body;
     const userId = Number(req.params.id);
 
     console.log("🔍 ========== DEBUG START ==========");
@@ -357,7 +358,7 @@ exports.updateUserProfile = async (req, res) => {
     console.log("🔍 STEP 1: Checking if user exists...");
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("id, email, firstname, lastname")
+      .select("id, email, firstname, lastname, status")
       .eq("id", userId)
       .maybeSingle();
 
@@ -385,7 +386,7 @@ exports.updateUserProfile = async (req, res) => {
 
     // STEP 2: Try to update users table directly
     console.log("🔍 STEP 2: Attempting to update users table...");
-    console.log("SQL equivalent: UPDATE users SET firstname = ?, lastname = ?, email = ? WHERE id = ?", firstname, lastname, email, userId);
+    console.log("SQL equivalent: UPDATE users SET firstname = ?, lastname = ?, email = ?, status = ? WHERE id = ?", firstname, lastname, email, status, userId);
 
     const { data: usersUpdate, error: usersError } = await supabase
       .from("users")
@@ -393,6 +394,7 @@ exports.updateUserProfile = async (req, res) => {
         firstname: firstname,
         lastname: lastname,
         email: email,
+        status: status,
       })
       .eq("id", userId)
       .select("id, email, firstname, lastname"); // Only select needed fields
@@ -418,7 +420,7 @@ exports.updateUserProfile = async (req, res) => {
       // Try a simpler update without select
       const { count, error: simpleError } = await supabase
         .from("users")
-        .update({ firstname: firstname, lastname: lastname, email: email })
+        .update({ firstname: firstname, lastname: lastname, email: email , status: status })
         .eq("id", userId);
 
       console.log("Simple update result:", { count, error: simpleError });
@@ -436,6 +438,7 @@ exports.updateUserProfile = async (req, res) => {
         firstname: firstname,
         lastname: lastname,
         email: email,
+        status: status,
       })
       .eq("email", user.email)
       .select();

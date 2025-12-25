@@ -63,6 +63,7 @@ exports.registerTransporter = async (req, res) => {
     }
 
     res.status(201).json({
+      success: true,
       message: "Transporter registered successfully",
       user: {
         transporter_id: data.id,
@@ -431,7 +432,7 @@ exports.updateTransporterStatus = async (req, res) => {
 
 exports.updateTransporterProfile = async (req, res) => {
   try {
-    const { firstname, lastname, email, license_plate, vehicle_type } = req.body;
+    const { firstname, lastname, email, license_plate, vehicle_type, status } = req.body;
     const userId = Number(req.params.id);
 
     console.log("🔍 ========== DEBUG START ==========");
@@ -448,7 +449,7 @@ exports.updateTransporterProfile = async (req, res) => {
     console.log("🔍 STEP 1: Checking if user exists...");
     const { data: user, error: userError } = await supabase
       .from("transporters")
-      .select("id, email, firstname, lastname, license_plate, vehicle_type")
+      .select("id, email, firstname, lastname, license_plate, vehicle_type, status")
       .eq("id", userId)
       .maybeSingle();
 
@@ -465,7 +466,7 @@ exports.updateTransporterProfile = async (req, res) => {
     console.log("📊 User data:", user);
 
     if (!user) {
-      console.log("❌ User not found in database");
+      console.log("❌ Transporter not found in database");
       return res.status(404).json({
         success: false,
         message: `User with ID ${userId} not found in database`
@@ -476,7 +477,7 @@ exports.updateTransporterProfile = async (req, res) => {
 
     // STEP 2: Try to update users table directly
     console.log("🔍 STEP 2: Attempting to update users table...");
-    console.log("SQL equivalent: UPDATE users SET firstname = ?, lastname = ?, email = ?, license_plate = ?, vehicle_type = ? WHERE id = ?", firstname, lastname, email, license_plate, vehicle_type, userId);
+    console.log("SQL equivalent: UPDATE users SET firstname = ?, lastname = ?, email = ?, license_plate = ?, vehicle_type = ?, status = ? WHERE id = ?", firstname, lastname, email, license_plate, vehicle_type, status, userId);
 
     const { data: usersUpdate, error: usersError } = await supabase
       .from("transporters")
@@ -485,10 +486,11 @@ exports.updateTransporterProfile = async (req, res) => {
         lastname: lastname,
         email: email,
         license_plate: license_plate,
-        vehicle_type: vehicle_type
+        vehicle_type: vehicle_type,
+        status: status
       })
       .eq("id", userId)
-      .select("id, email, firstname, lastname, license_plate, vehicle_type"); // Only select needed fields
+      .select("id, email, firstname, lastname, license_plate, vehicle_type, status"); // Only select needed fields
 
     console.log("📊 Users update result:", {
       data: usersUpdate,
@@ -516,7 +518,8 @@ exports.updateTransporterProfile = async (req, res) => {
           lastname: lastname,
           email: email,
           license_plate: license_plate,
-          vehicle_type: vehicle_type
+          vehicle_type: vehicle_type,
+          status: status  
         })
         .eq("id", userId);
 
@@ -536,7 +539,8 @@ exports.updateTransporterProfile = async (req, res) => {
         lastname: lastname,
         email: email,
         license_plate: license_plate,
-        vehicle_type: vehicle_type
+        vehicle_type: vehicle_type,
+        status: status,
       })
       .eq("email", user.email)
       .select();
@@ -565,7 +569,7 @@ exports.updateTransporterProfile = async (req, res) => {
 
     return res.json({
       success: true,
-      message: `User profile updated successfully`,
+      message: `Transporter profile updated successfully`,
       data: {
         user: usersUpdate[0],
         all_user: allUsersUpdate ? allUsersUpdate[0] : null
