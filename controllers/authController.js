@@ -13,11 +13,11 @@ exports.register = async (req, res) => {
     const { firstname, lastname, email, password, role } = req.body;
 
     if (!firstname || !lastname || !email || !password || !role) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
     if (!["user", "admin", "driver"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role" });
+      return res.status(400).json({ success: false, message: "Invalid role" });
     }
 
     // Check if email already exists
@@ -29,11 +29,11 @@ exports.register = async (req, res) => {
 
     if (findError) {
       console.error("Database error during email check:", findError);
-      return res.status(500).json({ message: "Database error", error: findError });
+      return res.status(500).json({ success: false, message: "Database error", error: findError });
     }
 
     if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
     // Hash password
@@ -47,7 +47,7 @@ exports.register = async (req, res) => {
 
     if (error) {
       console.error("Database error during user registration:", error);
-      return res.status(500).json({ message: "Failed to register user", error });
+      return res.status(500).json({ success: false, message: "Failed to register user", error });
     }
 
     // Insert into all_users
@@ -65,7 +65,7 @@ exports.register = async (req, res) => {
     res.json({ success: true, message: "User registered successfully", user: data[0] });
   } catch (err) {
     console.error("Unexpected error in register:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
   }
 };
 
@@ -78,7 +78,7 @@ exports.login = async (req, res) => {
     console.log("Login attempt for email:", email);
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res.status(401).json({ success: false, message: "All fields are required" });
     }
 
     // Fetch user metadata from all_users
@@ -90,10 +90,10 @@ exports.login = async (req, res) => {
 
     if (metaError) {
       console.error("Database error fetching all_users:", metaError);
-      return res.status(500).json({ message: "Database error", error: metaError });
+      return res.status(500).json({ success: false, message: "Database error", error: metaError });
     }
 
-    if (!allUser) return res.status(401).json({ message: "Email not found" });
+    if (!allUser) return res.status(401).json({ success: false, message: "Email not found" });
 
     const sourceTable = allUser.source_table;
 
@@ -106,18 +106,19 @@ exports.login = async (req, res) => {
 
     if (userError || !user) {
       console.error("Error fetching user from source table:", userError);
-      return res.status(500).json({ message: "Database error fetching user" });
+      return res.status(500).json({ success: false, message: "Database error fetching user" });
     }
 
     if (user.status === "banned") {
       return res.status(403).json({
+        success: false,
         message: "Your account has been banned. Please contact admin."
       });
     }
 
     // Compare password
     const passwordMatch = await comparePassword(password, user.password);
-    if (!passwordMatch) return res.status(401).json({ message: "Wrong password" });
+    if (!passwordMatch) return res.status(401).json({ success: false, message: "Wrong password" });
 
     if (allUser.status === "ban" || allUser.status === "banned") {
       console.log("🚫 Banned account attempt:", email);
@@ -177,7 +178,7 @@ exports.login = async (req, res) => {
 
   } catch (err) {
     console.error("Unexpected error in login:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
+    res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
   }
 };
 

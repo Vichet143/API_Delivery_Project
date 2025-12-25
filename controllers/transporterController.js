@@ -14,6 +14,7 @@ exports.registerTransporter = async (req, res) => {
     // ✅ Required fields
     if (!firstname || !lastname || !email || !password) {
       return res.status(400).json({
+        success: false,
         message: "Firstname, lastname, email, and password are required"
       });
     }
@@ -25,8 +26,8 @@ exports.registerTransporter = async (req, res) => {
       .eq("email", email)
       .maybeSingle();
 
-    if (findError) return res.status(500).json({ message: "Database error", error: findError });
-    if (existingUser) return res.status(400).json({ message: "Email already exists" });
+    if (findError) return res.status(500).json({ success: false, message: "Database error", error: findError });
+    if (existingUser) return res.status(400).json({ success: false, message: "Email already exists" });
 
     // Hash password
     const hashedPassword = await hashPassword(password);
@@ -46,7 +47,7 @@ exports.registerTransporter = async (req, res) => {
       .select()
       .single();
 
-    if (error) return res.status(500).json({ message: "Failed to register", error });
+    if (error) return res.status(500).json({ success: false, message: "Failed to register", error });
 
     // Insert into all_users
     try {
@@ -78,7 +79,7 @@ exports.registerTransporter = async (req, res) => {
 
   } catch (err) {
     console.error("registerTransporter error:", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
