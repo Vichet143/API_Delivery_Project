@@ -73,6 +73,7 @@ const DeliveryModel = {
           pickup_lng: deliveryData.pickup_lng,
           destination_lat: deliveryData.destination_lat,
           destination_lng: deliveryData.destination_lng,
+          distance: deliveryData.distance,
 
           receiver_name: deliveryData.receiver_name,
           receiver_contact: deliveryData.receiver_contact,

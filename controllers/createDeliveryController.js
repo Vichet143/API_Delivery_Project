@@ -27,6 +27,7 @@ const createDelivery = async (req, res) => {
       destination_address,
       destination_lat, // <--- ADDED
       destination_lng, // <--- ADDED
+      distance,
       type_of_items,
       itemsize,
       weight,
@@ -64,6 +65,7 @@ const createDelivery = async (req, res) => {
       destination_address,
       destination_lat, // <--- ADDED
       destination_lng, // <--- ADDED
+      distance,
       type_of_items,
       itemsize,
       weight,
@@ -261,6 +263,58 @@ const getDeliveriesById = async (req, res) => {
   }
 };
 
+// --- NEW FUNCTION FOR DRIVER DASHBOARD ---
+const getDriverStats = async (req, res) => {
+  try {
+    // 1. Get Driver ID from the Token
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const transporter_id = decoded.id;
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
+    // 2. Fetch all DELIVERED jobs for this driver from Supabase
+    // FIX: Change 'transporter_deliveries' to 'createdeliveries'
+    // because that is the table you are updating in updateDeliveryStatus()
+    const { data, error } = await supabase
+      .from("createdeliveries") 
+      .select("total_amount")
+      .eq("transporter_id", transporter_id)
+      .eq("status", "delivered");
+
+    if (error) return res.status(400).json({ message: error.message });
+
+    // 3. Calculate Logic
+    const count = data.length; // How many items delivered
+    
+    // Sum up the money
+    const totalGross = data.reduce((sum, item) => sum + (item.total_amount || 0), 0);
+    
+    // Apply 20% Company Fee (Driver gets 80%)
+    const netEarnings = totalGross * 0.8;
+
+    return res.json({
+      success: true,
+      total_delivered: count,
+      total_earnings: netEarnings.toFixed(2), // Clean number like "4.82"
+      company_commission: (totalGross * 0.2).toFixed(2)
+    });
+
+  } catch (err) {
+    return res.status(500).json({ message: err.message || "Internal error" });
+  }
+};
 
 
-module.exports = { createDelivery, getallcreatedeliveries, getDeliveriesByToken, acceptDelivery, updateDeliveryStatus, getAllDelivery, getDeliveriesById, getDeliveriesByTransporter };
+
+module.exports = { 
+  createDelivery, 
+  getallcreatedeliveries, 
+  getDeliveriesByToken, 
+  acceptDelivery, 
+  updateDeliveryStatus, 
+  getAllDelivery, 
+  getDeliveriesById, 
+  getDeliveriesByTransporter,
+  getDriverStats,
+
+};
