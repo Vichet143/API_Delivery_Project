@@ -109,7 +109,7 @@ exports.login = async (req, res) => {
       return res.status(500).json({ message: "Database error fetching user" });
     }
 
-    if (user.status === "ban") {
+    if (user.status === "banned") {
       return res.status(403).json({
         message: "Your account has been banned. Please contact admin."
       });
