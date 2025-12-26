@@ -550,8 +550,6 @@ exports.updateTransporterProfile = async (req, res) => {
         firstname: firstname,
         lastname: lastname,
         email: email,
-        license_plate: license_plate,
-        vehicle_type: vehicle_type,
         status: status,
       })
       .eq("email", user.email)
@@ -572,7 +570,7 @@ exports.updateTransporterProfile = async (req, res) => {
     console.log("🔍 STEP 4: Verifying update...");
     const { data: verifyUser } = await supabase
       .from("transporters")
-      .select("id, email, firstname, lastname")
+      .select("id, email, firstname, lastname, status")
       .eq("id", userId)
       .single();
 
