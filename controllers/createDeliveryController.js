@@ -100,10 +100,10 @@ const acceptDelivery = async (req, res) => {
   try {
     const { delivery_id } = req.body; // ✅ get from body
     if (!delivery_id)
-      return res.status(400).json({ message: "delivery_id is required" });
+      return res.status(400).json({success:false, message: "delivery_id is required" });
 
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
+    if (!token) return res.status(401).json({success:false, message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const transporter_id = decoded.id;
@@ -117,13 +117,13 @@ const acceptDelivery = async (req, res) => {
 
     if (error) return res.status(400).json({ message: error.message });
     if (!data?.inserted)
-      return res.status(404).json({ message: "Already accepted or not found" });
+      return res.status(404).json({success:false, message: "Already accepted or not found" });
 
-    res.json({ message: "Delivery accepted", delivery: data.inserted });
+    res.json({success:true, message: "Delivery accepted", delivery: data.inserted });
 
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({success:false, message: err.message });
   }
 };
 
@@ -170,7 +170,8 @@ const updateDeliveryStatus = async (req, res) => {
     }
 
     return res.json({
-      message: "Status updated successfully",
+      success:true,
+      message: `Status ${status} updated successfully`,
       delivery: data
     });
 

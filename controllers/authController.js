@@ -237,6 +237,18 @@ exports.updateUserStatus = async (req, res) => {
 
     console.log("✅ User found:", user.email);
 
+
+    if (user.status === "banned" && status === "banned") {
+      return res.status(409).json({
+        success: false,
+        message: "This account is already banned",
+        data: {
+          userId: user.id,
+          status: user.status
+        }
+      });
+    }
+
     // STEP 2: Try to update users table directly
     console.log("🔍 STEP 2: Attempting to update users table...");
     console.log("SQL equivalent: UPDATE users SET status = ? WHERE id = ?", status, userId);
